@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat</title>
+    <!-- ✅ Use Firebase v9 in compat mode to fix import errors -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #chatbox {
+            width: 300px;
+            height: 300px;
+            border: 1px solid black;
+            overflow-y: auto;
+            margin: 10px auto;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        input {
+            width: 200px;
+            padding: 5px;
+            margin: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Simple Chat</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="nickname" placeholder="Enter nickname">
+    <br>
+    <input type="text" id="message" placeholder="Enter message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+    // ✅ Correct Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBO8wfW-Hk7_razKfKS657zsNpgbdl8oRY",
+        authDomain: "simple-chat-bd52a.firebaseapp.com",
+        databaseURL: "https://simple-chat-bd52a-default-rtdb.firebaseio.com",
+        projectId: "simple-chat-bd52a",
+        storageBucket: "simple-chat-bd52a.appspot.com",  // ✅ Fixed URL
+        messagingSenderId: "378727090977",
+        appId: "1:378727090977:web:dcd6b0b2f6b8746ba34c60"
+    };
+
+    // ✅ Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // ✅ Function to Send a Message
+    function sendMessage() {
+        let nickname = document.getElementById("nickname").value;
+        let message = document.getElementById("message").value;
+        
+        if (nickname && message) {
+            let chatRef = database.ref("messages");
+            chatRef.push({
+                name: nickname,
+                text: message
+            }).then(() => {
+                document.getElementById("message").value = ""; // ✅ Clear message input
+            }).catch(error => {
+                console.error("Error sending message:", error);
+            });
+        }
+    }
+
+    // ✅ Function to Load Messages from Firebase
+    function loadMessages() {
+        let chatbox = document.getElementById("chatbox");
+        let chatRef = database.ref("messages");
+
+        chatRef.on("child_added", function(snapshot) {
+            let msg = snapshot.val();
+            let newMessage = document.createElement("p");
+            newMessage.textContent = msg.name + ": " + msg.text;
+            chatbox.appendChild(newMessage);
+            chatbox.scrollTop = chatbox.scrollHeight; // ✅ Auto-scroll to bottom
+        });
+    }
+
+    // ✅ Load messages when the page opens
+    window.onload = loadMessages;
+    </script>
+</body>
+</html>
